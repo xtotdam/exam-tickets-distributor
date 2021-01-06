@@ -27,7 +27,7 @@ def new_student_row(i, name, number):
     return [
         sg.Text(i+1, size=(2, 1), justification='left'),
         sg.Input(name, size=(20, 1), key=f'_table_name_{i}', justification='left'),
-        sg.Input(number, size=(7, 1), key=f'_table_num_{i}', justification='left'),
+        sg.Input(number, size=(7, 1), key=f'_table_num_{i}', justification='left', tooltip=f'Целое число от 1 до {bilet_count}'),
         sg.Text('', size=(6, 1), key=f'_table_b_{i}', justification='left')
     ]
 
@@ -40,7 +40,6 @@ def generate_layout(generate_bilets=False):
             sg.Text('Билет', size=(6, 1), justification='left', tooltip='Здесь появится номер вытащенного билета')
         ],
         *[new_student_row(i, '', i+1) for i in range(students_count)],
-
         [
             sg.Button('Добавить студента', key='add'),
             sg.Button('Распределить билеты', key='distribute')
@@ -49,7 +48,7 @@ def generate_layout(generate_bilets=False):
             sg.Text('Число билетов'),
             sg.Input(bilet_count, key='bilet_count', size=(4, 1), tooltip='Число билетов'),
             sg.Text('', size=(15,1)),
-            sg.Button('@', key='github', pad=(0,0))
+            sg.Button('@', key='github', pad=(0,0), tooltip='Перейти на веб-страницу программы')
         ],
         [
             sg.Text('', text_color="#ff0000", key='_error', size=(40,1)),
