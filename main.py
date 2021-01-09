@@ -18,37 +18,34 @@ printout_data = dict()
 bilets_width = 10
 all_valid = False
 colors = [
-    '#DFFF00', '#FFBF00', '#FF7F50', '#DE3163',
+    '#DFFF00', '#FFBF00', '#FF7F50', '#FE5183',
     '#9FE2BF', '#40E0D0', '#89CFF0', '#6495ED',
     '#CCCCFF', '#E0B0FF'
 ]
 
 def new_student_row(i, name, number):
     return [
-        sg.Text(i+1, size=(2, 1), justification='left'),
-        sg.Input(name, size=(20, 1), key=f'_table_name_{i}', justification='left'),
+        sg.Text(i+1, size=(2, 1), justification='right'),
+        sg.Input(name, size=(30, 1), key=f'_table_name_{i}', justification='left'),
         sg.Input(number, size=(7, 1), key=f'_table_num_{i}', justification='left', tooltip=f'Целое число от 1 до {bilet_count}'),
-        sg.Text('', size=(6, 1), key=f'_table_b_{i}', justification='left')
+        sg.Text('', size=(6, 1), key=f'_table_b_{i}', justification='right', font='Arial 12 bold')
     ]
 
-def generate_layout(generate_bilets=False):
+def generate_layout(generate_bilets=True):
     layout = [
         [
             sg.Text('#', size=(2, 1), justification='left'),
-            sg.Text('Фамилия', size=(20, 1), justification='left'),
+            sg.Text('Фамилия', size=(30, 1), justification='left'),
             sg.Text('Загадал', size=(7, 1), justification='left', tooltip='Загаданный студентом номер'),
             sg.Text('Билет', size=(6, 1), justification='left', tooltip='Здесь появится номер вытащенного билета')
         ],
         *[new_student_row(i, '', i+1) for i in range(students_count)],
         [
-            sg.Button('Добавить студента', key='add'),
-            sg.Button('Распределить билеты', key='distribute')
-        ],
-        [
-            sg.Text('Число билетов'),
+            sg.Button('Добавить', key='add'),
+            sg.Button('Распределить', key='distribute'),
+            sg.Text('Билетов:'),
             sg.Input(bilet_count, key='bilet_count', size=(4, 1), tooltip='Число билетов'),
-            sg.Text('', size=(15,1)),
-            sg.Button('@', key='github', pad=(0,0), tooltip='Перейти на веб-страницу программы')
+            sg.Button('Обновить', key='bilet_update'),
         ],
         [
             sg.Text('', text_color="#ff0000", key='_error', size=(40,1)),
@@ -65,7 +62,7 @@ def generate_layout(generate_bilets=False):
             for w in range(bilets_width):
                 bilet_num = h * bilets_width + w
                 if bilet_num < bilet_count:
-                    row.append(sg.Text(bilet_num+1, size=(3,1), key=f'_bilet_{bilet_num+1}', justification='right'))
+                    row.append(sg.Text(bilet_num+1, size=(3,1), key=f'_bilet_{bilet_num+1}', justification='right', font='Arial 12 bold'))
                 else:
                     break
             grid.append(row)
@@ -75,7 +72,7 @@ def generate_layout(generate_bilets=False):
             for w in range(bilets_width):
                 bilet_num = h * bilets_width + w
                 if bilet_num < bilet_count:
-                    row.append(sg.Text('', size=(3,1), key=f'_pool_{bilet_num+1}', justification='right'))
+                    row.append(sg.Text('', size=(3,1), key=f'_pool_{bilet_num+1}', justification='right', font='Arial 12 bold'))
                 else:
                     break
             pool.append(row)
@@ -87,7 +84,11 @@ def generate_layout(generate_bilets=False):
             [sg.HorizontalSeparator()],
             [sg.Text('Совпадения с загаданным номером')],
             *grid,
-            [sg.Button('Распечатать', key='printout')]
+            [
+                sg.Button('Распечатать', key='printout'),
+                sg.Text('', size=(35,1)),
+                sg.Button('v1.1', key='github', pad=(0,0), tooltip='Перейти на веб-страницу программы', button_color=("#555", '#fff'))
+            ]
         ]
 
     return layout
@@ -98,7 +99,7 @@ window.Finalize()
 
 while True:  # Event Loop
     event, values = window.read()
-    print(values)
+    # print(values)
 
     if values is not None:
         bilet_count = int(values['bilet_count'])
@@ -126,8 +127,9 @@ while True:  # Event Loop
         break
 
 
-    elif event == 'add':
-        students_count += 1
+    elif event == 'add' or event == 'bilet_update':
+        if event == 'add':
+            students_count += 1
 
         window.Close()
         window = sg.Window(window_title, location=loc).Layout(generate_layout())
@@ -141,14 +143,6 @@ while True:  # Event Loop
 
     elif event == 'distribute':
         if all_valid:
-            window.Close()
-            window = sg.Window(window_title, location=loc).Layout(generate_layout(generate_bilets=True))
-            window.Finalize()
-
-            for i in range(students_count):
-                window[f'_table_name_{i}'].update(student_names[i])
-                window[f'_table_num_{i}'].update(student_numbers[i])
-
             # ensure numbers are unique
             if not len(set(student_numbers)) == len(student_numbers):
                 print('Not unique')
@@ -180,6 +174,11 @@ while True:  # Event Loop
             printout_data['Фамилия'] = list()
             printout_data['Билет'] = list()
 
+            for i in range(bilet_count):
+                window[f'_pool_{i+1}'].update(background_color="#fff")
+                window[f'_bilet_{i+1}'].update(background_color="#fff")
+
+
             for i in range(students_count):
                 window[f'_table_b_{i}'].update(bilets[int(student_numbers[i]) - 1], background_color=colors[i % len(colors)])
 
@@ -191,8 +190,9 @@ while True:  # Event Loop
 
 
     elif event == 'printout':
-        layout = [[sg.Multiline(tabulate.tabulate(printout_data, headers='keys'), size=(40, students_count+4))]]
-        window2 = sg.Window('Список', layout, modal=True)
+        # printout_data['Оценка'] = [''] * students_count
+        layout2 = [[sg.Multiline(tabulate.tabulate(printout_data, headers='keys'), size=(40, students_count+4), font='Courier')]]
+        window2 = sg.Window('Список', layout2, modal=True)
         window2.Finalize()
 
     elif event == 'github':
