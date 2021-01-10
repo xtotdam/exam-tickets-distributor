@@ -1,7 +1,7 @@
 # exam-tickets-distributor
 Простенький наглядный распределитель билетов для дистанционного экзамена
 
-![screenshot](https://user-images.githubusercontent.com/5108025/103782522-9efa4000-5048-11eb-8e08-ed32bfcc6fb7.png)
+![screenshot](https://user-images.githubusercontent.com/5108025/104124998-125fc280-5365-11eb-97a3-6cbc68dc9dc8.png)
 
 #### Принцип действия
 
