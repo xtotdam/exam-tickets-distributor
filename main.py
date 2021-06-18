@@ -1,5 +1,7 @@
 # import pretty_errors
 
+__version__ = 'v1.2'
+
 import PySimpleGUI as sg
 import tabulate
 
@@ -8,10 +10,11 @@ from pprint import pprint
 import webbrowser
 
 sg.theme('Reddit')
+sg.SetOptions(font='Arial 10')
 
 window_title = 'Распределитель билетов'
 bilet_count = 30
-students_count = 5
+students_count = 3
 student_names = list()
 student_numbers = list()
 printout_data = dict()
@@ -33,6 +36,11 @@ def new_student_row(i, name, number):
 
 def generate_layout(generate_bilets=True):
     layout = [
+        [
+            sg.Text('Экзамен', size=(10, 1), font='Arial 11 bold'),
+            sg.Input('', size=(43, 1), font='Arial 10 bold', key='exam_name')
+        ],
+        [sg.HorizontalSeparator()],
         [
             sg.Text('#', size=(2, 1), justification='left'),
             sg.Text('Фамилия', size=(30, 1), justification='left'),
@@ -87,7 +95,7 @@ def generate_layout(generate_bilets=True):
             [
                 sg.Button('Распечатать', key='printout'),
                 sg.Text('', size=(35,1)),
-                sg.Button('v1.1', key='github', pad=(0,0), tooltip='Перейти на веб-страницу программы', button_color=("#555", '#fff'))
+                sg.Button(__version__, key='github', pad=(0,0), tooltip='Перейти на веб-страницу программы', button_color=("#555", '#fff'))
             ]
         ]
 
@@ -173,6 +181,7 @@ while True:  # Event Loop
 
             printout_data['Фамилия'] = list()
             printout_data['Билет'] = list()
+            printout_data['Оценка'] = list()
 
             for i in range(bilet_count):
                 window[f'_pool_{i+1}'].update(background_color="#fff")
@@ -187,11 +196,13 @@ while True:  # Event Loop
 
                 printout_data['Фамилия'].append(values[f'_table_name_{i}'])
                 printout_data['Билет'].append(bilets[int(student_numbers[i]) - 1])
+                printout_data['Оценка'].append('.')
 
 
     elif event == 'printout':
         # printout_data['Оценка'] = [''] * students_count
-        layout2 = [[sg.Multiline(tabulate.tabulate(printout_data, headers='keys'), size=(40, students_count+4), font='Courier')]]
+        print_text = f'Экзамен: {values["exam_name"]}\n' + tabulate.tabulate(printout_data, headers='keys')
+        layout2 = [[sg.Multiline(print_text, size=(40, students_count+4), font='Courier')]]
         window2 = sg.Window('Список', layout2, modal=True)
         window2.Finalize()
 
